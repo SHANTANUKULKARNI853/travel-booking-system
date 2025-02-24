@@ -6,14 +6,14 @@
         "use": "@vercel/react"
       },
       {
-        "src": "backend/package.json",
+        "src": "server/package.json",  
         "use": "@vercel/node"
       }
     ],
     "routes": [
       {
         "src": "/api/graphql",
-        "dest": "/backend/api/graphql.js"
+        "dest": "/server/api/graphql.js"
       },
       {
         "src": "/(.*)",
