@@ -4,9 +4,10 @@ import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
 import App from "./App";
 
 const client = new ApolloClient({
-  uri: "http://localhost:4000/graphql",
+  uri: "https://travel-booking-system-1-9z9q.onrender.com/graphql",
   cache: new InMemoryCache(),
 });
+
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

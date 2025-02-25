@@ -8,9 +8,10 @@ import Bookings from "./Bookings";
 
 
 const client = new ApolloClient({
-  uri: "http://localhost:4000/graphql", // Ensure correct backend URL
+  uri: "https://travel-booking-system-1-9z9q.onrender.com/graphql", // Use the deployed backend URL
   cache: new InMemoryCache(),
 });
+
 
 const GET_BOOKINGS = gql`
   query GetBookings {
