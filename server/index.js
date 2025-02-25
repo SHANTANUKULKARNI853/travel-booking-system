@@ -23,11 +23,10 @@ const typeDefs = gql`
   }
 
   type Mutation {
-  addBooking(name: String!, email: String!, destination: String!, date: String!, travelers: Int!): Booking
-  deleteBooking(id: ID!): Booking
-  updateBooking(id: ID!, name: String, email: String, destination: String, date: String, travelers: Int): Booking
-}
-
+    addBooking(name: String!, email: String!, destination: String!, date: String!, travelers: Int!): Booking
+    deleteBooking(id: ID!): Booking
+    updateBooking(id: ID!, name: String, email: String, destination: String, date: String, travelers: Int): Booking
+  }
 `;
 
 const resolvers = {
@@ -61,22 +60,25 @@ const resolvers = {
   },
 };
 
-
 const startServer = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log('Connected to MongoDB');
+    const PORT = process.env.PORT || 4000;
+
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('✅ Connected to MongoDB');
 
     const server = new ApolloServer({ typeDefs, resolvers });
     await server.start();
     server.applyMiddleware({ app });
 
-    const PORT = process.env.PORT || 4000;
     app.listen(PORT, () => {
-      console.log(`Server running at http://localhost:${PORT}${server.graphqlPath}`);
+      console.log(`🚀 Server running at http://localhost:${PORT}${server.graphqlPath}`);
     });
   } catch (error) {
-    console.error('Error starting server:', error);
+    console.error('❌ Error starting server:', error);
   }
 };
 
