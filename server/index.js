@@ -3,6 +3,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const { ApolloServer, gql } = require("apollo-server-express");
+const Booking = require("./models/Booking");
+
 
 const app = express();
 app.use(cors());
@@ -54,6 +56,7 @@ const resolvers = {
   },
   Mutation: {
     addBooking: async (_, { name, email, destination, date, travelers }) => {
+      console.log("📩 Adding new booking:", { name, email, destination, date, travelers });
       const newBooking = new Booking({ name, email, destination, date, travelers });
       return await newBooking.save();
     },
