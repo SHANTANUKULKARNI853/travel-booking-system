@@ -23,9 +23,11 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    addBooking(name: String!, email: String!, destination: String!, date: String!, travelers: Int!): Booking
-    deleteBooking(id: ID!): Booking
-  }
+  addBooking(name: String!, email: String!, destination: String!, date: String!, travelers: Int!): Booking
+  deleteBooking(id: ID!): Booking
+  updateBooking(id: ID!, name: String, email: String, destination: String, date: String, travelers: Int): Booking
+}
+
 `;
 
 const resolvers = {
@@ -45,8 +47,20 @@ const resolvers = {
       }
       return deletedBooking;
     },
+    updateBooking: async (_, { id, name, email, destination, date, travelers }) => {
+      const updatedBooking = await Booking.findByIdAndUpdate(
+        id,
+        { name, email, destination, date, travelers },
+        { new: true }
+      );
+      if (!updatedBooking) {
+        throw new Error("Booking not found");
+      }
+      return updatedBooking;
+    },
   },
 };
+
 
 const startServer = async () => {
   try {
