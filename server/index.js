@@ -1,12 +1,30 @@
-const express = require('express');
-const { ApolloServer, gql } = require('apollo-server-express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
-const Booking = require('./models/Booking');
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const { ApolloServer, gql } = require("apollo-server-express");
 
 const app = express();
 app.use(cors());
+app.use(express.json());
+
+const PORT = process.env.PORT || 4000;
+const MONGO_URI = process.env.MONGO_URI;
+
+if (!MONGO_URI) {
+  console.error("❌ MongoDB connection string is missing. Check your .env file.");
+  process.exit(1);
+}
+
+console.log("🔍 Connecting to MongoDB...");
+
+mongoose
+  .connect(MONGO_URI)
+  .then(() => console.log("✅ Connected to MongoDB Atlas"))
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err);
+    process.exit(1);
+  });
 
 const typeDefs = gql`
   type Booking {
@@ -25,61 +43,40 @@ const typeDefs = gql`
   type Mutation {
     addBooking(name: String!, email: String!, destination: String!, date: String!, travelers: Int!): Booking
     deleteBooking(id: ID!): Booking
-    updateBooking(id: ID!, name: String, email: String, destination: String, date: String, travelers: Int): Booking
   }
 `;
 
 const resolvers = {
   Query: {
-    getBookings: async () => await Booking.find(),
+    getBookings: async () => {
+      return await Booking.find();
+    },
   },
   Mutation: {
     addBooking: async (_, { name, email, destination, date, travelers }) => {
-      const booking = new Booking({ name, email, destination, date, travelers });
-      await booking.save();
-      return booking;
+      const newBooking = new Booking({ name, email, destination, date, travelers });
+      return await newBooking.save();
     },
     deleteBooking: async (_, { id }) => {
-      const deletedBooking = await Booking.findByIdAndDelete(id);
-      if (!deletedBooking) {
-        throw new Error("Booking not found");
-      }
-      return deletedBooking;
-    },
-    updateBooking: async (_, { id, name, email, destination, date, travelers }) => {
-      const updatedBooking = await Booking.findByIdAndUpdate(
-        id,
-        { name, email, destination, date, travelers },
-        { new: true }
-      );
-      if (!updatedBooking) {
-        throw new Error("Booking not found");
-      }
-      return updatedBooking;
+      return await Booking.findByIdAndDelete(id);
     },
   },
 };
 
-const startServer = async () => {
-  try {
-    const PORT = process.env.PORT || 4000;
+const server = new ApolloServer({ typeDefs, resolvers });
 
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log('✅ Connected to MongoDB');
+async function startServer() {
+  await server.start();
+  server.applyMiddleware({ app });
 
-    const server = new ApolloServer({ typeDefs, resolvers });
-    await server.start();
-    server.applyMiddleware({ app });
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}/graphql`);
+  }).on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      console.error(`❌ Port ${PORT} is already in use. Use a different port.`);
+      process.exit(1);
+    }
+  });
+}
 
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running at http://localhost:${PORT}${server.graphqlPath}`);
-    });
-  } catch (error) {
-    console.error('❌ Error starting server:', error);
-  }
-};
-
-startServer();
+startServer().catch((err) => console.error("❌ Error starting server:", err));
